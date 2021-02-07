@@ -1,0 +1,68 @@
+---
+title: "Market Basket Analysis"
+author: "Ashwath Paul"
+date: "02 February 2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Reading the data 
+#Install the required packages
+```{r}
+library(arules)
+#install.packages("arulesViz")
+library(arulesViz)
+library(dplyr)
+library(ggplot2)
+```
+
+#Read the data as transactions 
+```{r}
+data("Groceries")
+summary(Groceries)
+g=summary(Groceries)
+barplot(g@lengths,xlab = "Number of items per transaction", ylab= "Frequency")
+itemFrequency(Groceries[,1:10])
+```
+
+#Checking the item frequency 
+```{r}
+itemFrequencyPlot(Groceries, support = .10)
+```
+#Fit apriori
+```{r}
+grocery_apriori <- apriori(Groceries, parameter=list(support=.02, confidence=.4, minlen=2))
+summary(grocery_apriori)
+```
+#View the rules
+```{r}
+inspect(sort(grocery_apriori, by="lift"))
+```
+```{r}
+fit<-sort(grocery_apriori,by="lift")
+inspect(fit)
+```
+```{r}
+inspect(fit[is.redundant(fit)])
+fit <- fit[!is.redundant(fit)]
+plot(fit)
+```
+```{r}
+plot(fit, measure = c("support", "lift"), shading = "confidence")
+plot(fit,cex=1)
+plot(fit,method="graph")
+```
+
+```{r}
+rules <- apriori(Groceries, parameter=list(support=0.001, confidence=0.5))
+subrules2 <- head(rules, n = 12, by = "lift")
+inspect(subrules2)
+plot(subrules2,method="graph")
+plot(subrules2, method = "paracoord")
+plot(rules, method = "two-key plot",jitter=0)
+plot(rules, method = "grouped",control = list(k = 10))
+```
